@@ -1,0 +1,28 @@
+name: LinguaFlow
+description: Pull, validate, generate, push or publish type-safe localization resources.
+author: LinguaFlow
+branding:
+  icon: globe
+  color: purple
+inputs:
+  command:
+    description: One of sync, pull, generate, check, push, diff or publish.
+    required: false
+    default: sync
+  config:
+    description: Path to the .linguaconfig file, relative to working-directory.
+    required: false
+    default: .linguaconfig
+  working-directory:
+    description: Repository-relative working directory.
+    required: false
+    default: .
+  management-key:
+    description: Management API key. Required only by push, diff and publish.
+    required: false
+  arguments:
+    description: Additional CLI arguments, one argument per line. Values are never evaluated by a shell.
+    required: false
+runs:
+  using: node24
+  main: dist/index.cjs
