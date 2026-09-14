@@ -6,7 +6,7 @@ branding:
   color: purple
 inputs:
   command:
-    description: One of sync, pull, generate, check, push, diff or publish.
+    description: One of sync, pull, generate, check, push, diff, branch or publish.
     required: false
     default: sync
   config:
@@ -18,7 +18,7 @@ inputs:
     required: false
     default: .
   management-key:
-    description: Management API key. Required only by push, diff and publish.
+    description: Management API key. Required only by push, diff, branch and publish.
     required: false
   arguments:
     description: Additional CLI arguments, one argument per line. Values are never evaluated by a shell.

@@ -7,25 +7,43 @@ export const actionCommands = [
   'check',
   'push',
   'diff',
+  'branch',
   'publish',
 ] as const
 export type ActionCommand = (typeof actionCommands)[number]
 
-export function actionArguments(input: {
+export interface ActionInput {
   command: string
   config: string
   workingDirectory: string
   arguments: readonly string[]
   workspace: string
-}) {
-  if (!actionCommands.includes(input.command as ActionCommand)) {
-    throw new Error(`Unsupported LinguaFlow command: ${input.command}`)
+}
+
+export interface ActionInvocation {
+  cwd: string
+  argv: string[]
+}
+
+export class ActionInputError extends Error {
+  constructor(message: string) {
+    super(message)
+    this.name = 'ActionInputError'
+  }
+}
+
+export function actionArguments(input: ActionInput): ActionInvocation {
+  if (!isActionCommand(input.command)) {
+    throw new ActionInputError(`Unsupported LinguaFlow command: ${input.command}`)
   }
   const cwd = safeWorkingDirectory(input.workspace, input.workingDirectory)
   const config = requiredPath(input.config, 'config')
   const extra = input.arguments.map((value) => {
     if (value.includes('\0') || /[\r\n]/.test(value))
-      throw new Error('Each additional argument must occupy one line.')
+      throw new ActionInputError('Each additional argument must occupy one line.')
+    if (value === '--config' || value.startsWith('--config=')) {
+      throw new ActionInputError('Additional arguments cannot override the config input.')
+    }
     return value
   })
   return { cwd, argv: [input.command, '--config', config, ...extra] }
@@ -42,13 +60,17 @@ function safeWorkingDirectory(workspace: string, value: string) {
     relation.startsWith('../') ||
     relation.startsWith('..\\')
   ) {
-    throw new Error('working-directory must stay inside GITHUB_WORKSPACE.')
+    throw new ActionInputError('working-directory must stay inside GITHUB_WORKSPACE.')
   }
   return cwd
 }
 
 function requiredPath(value: string, name: string) {
   const path = value.trim()
-  if (!path || path.includes('\0')) throw new Error(`${name} must be a non-empty path.`)
+  if (!path || path.includes('\0')) throw new ActionInputError(`${name} must be a non-empty path.`)
   return path
+}
+
+function isActionCommand(value: string): value is ActionCommand {
+  return actionCommands.some((command) => command === value)
 }

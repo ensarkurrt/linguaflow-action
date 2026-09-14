@@ -35,4 +35,15 @@ test('rejects traversal and unknown commands', () => {
       workspace: '/work/repository',
     }),
   )
+  assert.throws(
+    () =>
+      actionArguments({
+        command: 'pull',
+        config: '.linguaconfig',
+        workingDirectory: '.',
+        arguments: ['--config=../../secret.json'],
+        workspace: '/work/repository',
+      }),
+    /cannot override the config/,
+  )
 })
